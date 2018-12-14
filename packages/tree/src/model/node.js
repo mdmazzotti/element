@@ -166,6 +166,10 @@ export default class Node {
     return getPropertyFromData(this, 'disabled');
   }
 
+  get showCheckbox() {
+    return getPropertyFromData(this, 'showCheckbox');
+  }
+
   get nextSibling() {
     const parent = this.parent;
     if (parent) {
