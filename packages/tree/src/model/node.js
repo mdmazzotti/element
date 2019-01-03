@@ -1,24 +1,36 @@
 import objectAssign from 'element-ui/src/utils/merge';
 import { markNodeData, NODE_KEY } from './util';
 
-export const getChildState = node => {
+export const getChildState = nodes => {
   let all = true;
   let none = true;
   let allWithoutDisable = true;
-  for (let i = 0, j = node.length; i < j; i++) {
-    const n = node[i];
-    if (n.checked !== true || n.indeterminate) {
+  let anyIndeterminate = false;
+  let anyChecked = false;
+  let anyDisabled = false;
+  let anyUnchecked = false;
+  for (let i = 0, j = nodes.length; i < j; i++) {
+    const n = nodes[i];
+    // se il nodo non è checked
+    if (n.checked !== true) {
       all = false;
+      // se il nodo non è checked ed è abilitato
       if (!n.disabled) {
         allWithoutDisable = false;
       }
     }
+
     if (n.checked !== false || n.indeterminate) {
       none = false;
     }
+
+    if (n.checked) anyChecked = true;
+    if (!n.checked) anyUnchecked = true;
+    if (n.indeterminate) anyIndeterminate = true;
+    if (n.disabled) anyDisabled = true;
   }
 
-  return { all, none, allWithoutDisable, half: !all && !none };
+  return { all, none, allWithoutDisable, half: anyIndeterminate || (anyChecked && (anyDisabled || anyUnchecked)) };
 };
 
 const reInitChecked = function(node) {
@@ -355,14 +367,13 @@ export default class Node {
   }
 
   setChecked(value, deep, recursion, passValue) {
-    this.indeterminate = value === 'half';
-    this.checked = value === true;
+    this.checked = value;
 
     if (this.store.checkStrictly) return;
 
     if (!(this.shouldLoadData() && !this.store.checkDescendants)) {
       let { all, allWithoutDisable } = getChildState(this.childNodes);
-
+      // se non è nodo foglia e se non tutti i figli sono checked, ma lo sono tutti quelli enable
       if (!this.isLeaf && (!all && allWithoutDisable)) {
         this.checked = false;
         value = false;
@@ -373,15 +384,20 @@ export default class Node {
           const childNodes = this.childNodes;
           for (let i = 0, j = childNodes.length; i < j; i++) {
             const child = childNodes[i];
-            passValue = passValue || value !== false;
+            passValue = passValue || value;
+            // se è disable deve rimanere come è altrimenti passValue
             const isCheck = child.disabled ? child.checked : passValue;
             child.setChecked(isCheck, deep, true, passValue);
           }
-          const { half, all } = getChildState(childNodes);
+          console.log(this.label);
+          const { half, all, allWithoutDisable } = getChildState(childNodes);
+          console.log(this.label + ' checked:' + this.checked + ' indeterminate:' + this.indeterminate);
+          console.log('allWithoutDisable ' + allWithoutDisable);
           if (!all) {
-            this.checked = all;
-            this.indeterminate = half;
+            this.checked = allWithoutDisable;
           }
+          this.indeterminate = half;
+          console.log(this.label + ' checked:' + this.checked + ' indeterminate:' + this.indeterminate);
         }
       };
 
