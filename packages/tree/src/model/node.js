@@ -389,15 +389,11 @@ export default class Node {
             const isCheck = child.disabled ? child.checked : passValue;
             child.setChecked(isCheck, deep, true, passValue);
           }
-          console.log(this.label);
           const { half, all, allWithoutDisable } = getChildState(childNodes);
-          console.log(this.label + ' checked:' + this.checked + ' indeterminate:' + this.indeterminate);
-          console.log('allWithoutDisable ' + allWithoutDisable);
           if (!all) {
             this.checked = allWithoutDisable;
           }
           this.indeterminate = half;
-          console.log(this.label + ' checked:' + this.checked + ' indeterminate:' + this.indeterminate);
         }
       };
 
