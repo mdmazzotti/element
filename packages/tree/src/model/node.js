@@ -35,7 +35,7 @@ export const getChildState = nodes => {
   return { all, none, allWithoutDisable, half: anyIndeterminate || (anyChecked && (anyDisabled || anyUnchecked)), allDisabled };
 };
 
-const reInitChecked = function (node) {
+const reInitChecked = function(node) {
   if (node.childNodes.length === 0) return;
 
   const { all, none, half } = getChildState(node.childNodes);
@@ -58,7 +58,7 @@ const reInitChecked = function (node) {
   }
 };
 
-const getPropertyFromData = function (node, prop) {
+const getPropertyFromData = function(node, prop) {
   const props = node.store.props;
   const data = node.data || {};
   const config = props[prop];
@@ -207,7 +207,7 @@ export default class Node {
   }
 
   contains(target, deep = true) {
-    const walk = function (parent) {
+    const walk = function(parent) {
       const children = parent.childNodes || [];
       let result = false;
       for (let i = 0, j = children.length; i < j; i++) {
@@ -408,8 +408,8 @@ export default class Node {
           handleDescendants();
           reInitChecked(this);
         }, {
-            checked: value !== false
-          });
+          checked: value !== false
+        });
         return;
       } else {
         handleDescendants();
