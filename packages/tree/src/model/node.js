@@ -5,6 +5,7 @@ export const getChildState = nodes => {
   let all = true;
   let none = true;
   let allWithoutDisable = true;
+  let allDisabled = nodes.length > 0;
   let anyIndeterminate = false;
   let anyChecked = false;
   let anyDisabled = false;
@@ -28,15 +29,16 @@ export const getChildState = nodes => {
     if (!n.checked) anyUnchecked = true;
     if (n.indeterminate) anyIndeterminate = true;
     if (n.disabled) anyDisabled = true;
+    if (!n.disabled) allDisabled = false;
   }
 
-  return { all, none, allWithoutDisable, half: anyIndeterminate || (anyChecked && (anyDisabled || anyUnchecked)) };
+  return { all, none, allWithoutDisable, half: anyIndeterminate || (anyChecked && (anyDisabled || anyUnchecked)), allDisabled };
 };
 
-const reInitChecked = function(node) {
+const reInitChecked = function (node) {
   if (node.childNodes.length === 0) return;
 
-  const {all, none, half} = getChildState(node.childNodes);
+  const { all, none, half } = getChildState(node.childNodes);
   if (all) {
     node.checked = true;
     node.indeterminate = false;
@@ -56,7 +58,7 @@ const reInitChecked = function(node) {
   }
 };
 
-const getPropertyFromData = function(node, prop) {
+const getPropertyFromData = function (node, prop) {
   const props = node.store.props;
   const data = node.data || {};
   const config = props[prop];
@@ -205,7 +207,7 @@ export default class Node {
   }
 
   contains(target, deep = true) {
-    const walk = function(parent) {
+    const walk = function (parent) {
       const children = parent.childNodes || [];
       let result = false;
       for (let i = 0, j = children.length; i < j; i++) {
@@ -389,9 +391,12 @@ export default class Node {
             const isCheck = child.disabled ? child.checked : passValue;
             child.setChecked(isCheck, deep, true, passValue);
           }
-          const { half, all, allWithoutDisable } = getChildState(childNodes);
+          const { half, all, allWithoutDisable, allDisabled } = getChildState(childNodes);
           if (!all) {
             this.checked = allWithoutDisable;
+          }
+          if (allDisabled) {
+            this.checked = false;
           }
           this.indeterminate = half;
         }
@@ -403,8 +408,8 @@ export default class Node {
           handleDescendants();
           reInitChecked(this);
         }, {
-          checked: value !== false
-        });
+            checked: value !== false
+          });
         return;
       } else {
         handleDescendants();
